@@ -1,55 +1,36 @@
 package com.example.demo.controller;
 
-import java.util.Map;
-
-
+import java.util.List;
 
 import com.example.demo.dto.UsuarioResponseDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.service.UsuarioService;
+import com.example.demo.dto.UsuarioRequestDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
+    @Autowired
+    private UsuarioService service;
 
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
-    }
-
-    
+    // 1. Crear usuario (CON autenticación)
     @PostMapping
-    public UsuarioResponseDTO crearUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.crearUsuario(usuario);
+    public UsuarioResponseDTO crearUsuario(@RequestBody UsuarioRequestDTO dto) {
+        return service.crearUsuario(dto);
     }
 
-   
+    // 2. Obtener todos (SIN autenticación)
     @GetMapping
     public List<Usuario> obtenerTodos() {
-        return usuarioService.obtenerTodos();
+        return service.obtenerTodos();
     }
 
-    
+    // 3. Obtener por id (CON autenticación)
     @GetMapping("/{id}")
     public Usuario obtenerPorId(@PathVariable Long id) {
-        return usuarioService.obtenerPorId(id);
-    }
-
-    
-    @GetMapping("/params")
-    public Map<String, String> obtenerPorParametros(
-            @RequestParam String nombre,
-            @RequestParam String apellido) {
-
-        Map<String, String> response = new HashMap<>();
-        response.put("nombreCompleto", nombre + " " + apellido);
-        return response;
+        return service.obtenerPorId(id);
     }
 }
-

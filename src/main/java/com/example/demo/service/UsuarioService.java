@@ -2,36 +2,41 @@ package com.example.demo.service;
 
 import com.example.demo.model.Usuario;
 import com.example.demo.dto.UsuarioResponseDTO;
+import com.example.demo.dto.UsuarioRequestDTO;
 import com.example.demo.repository.UsuarioRepository;
 
 import java.util.List;
-import java.util.stream.Collector;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class UsuarioService {
-    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+    @Autowired
+    private UsuarioRepository repository;
 
-    public UsuarioResponseDTO crearUsuario(Usuario usuario) {
-        Usuario guardado = usuarioRepository.save(usuario);
+    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre().toUpperCase());
+        usuario.setApellido(dto.getApellido().toUpperCase());
+        usuario.setUsername(dto.getUsername());
+        usuario.setPassword(dto.getPassword());
+
+        repository.save(usuario);
 
         return new UsuarioResponseDTO(
-            guardado.getNombre().toUpperCase(),
-            guardado.getApellido().toUpperCase()
-
+                usuario.getNombre(),
+                usuario.getApellido()
         );
     }
 
-    public List<Usuario> obtenerTodos(){
-        return usuarioRepository.findAll();
+    public List<Usuario> obtenerTodos() {
+        return repository.findAll();
     }
 
     public Usuario obtenerPorId(Long id) {
-        return usuarioRepository.findById(id).orElseThrow();
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }

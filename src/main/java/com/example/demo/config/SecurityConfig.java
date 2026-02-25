@@ -1,16 +1,16 @@
 package com.example.demo.config;
 
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.*;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -19,40 +19,31 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-
-                // GET sin autenticación
+                // SIN autenticación
                 .requestMatchers(HttpMethod.GET, "/api/usuarios").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/usuarios/params").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/params").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
 
-                // POST requiere autenticación
+                // CON autenticación
                 .requestMatchers(HttpMethod.POST, "/api/usuarios").authenticated()
-
-                // GET por ID requiere autenticación
-                .requestMatchers(HttpMethod.GET, "/api/usuarios/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/usuarios/**").authenticated()
 
                 .anyRequest().authenticated()
             )
-            .httpBasic(Customizer.withDefaults());
+            .httpBasic(basic -> {})
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // para H2
 
         return http.build();
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-
-        UserDetails user = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("1234"))
-                .roles("ADMIN")
+    public UserDetailsService users() {
+        UserDetails user = User
+                .withUsername("admin")
+                .password("{noop}1234")
+                .roles("USER")
                 .build();
-
         return new InMemoryUserDetailsManager(user);
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }
-
 
